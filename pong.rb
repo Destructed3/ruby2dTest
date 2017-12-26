@@ -97,7 +97,7 @@ class Player
 	def parts
 		parts = {
 			:top    => @paddle.y + @paddle.height/3,
-			:bottom => @paddle.y + 2*@paddle.height/3
+			:bottom => @paddle.y + 2(@paddle.height/3)
 		}
 		return parts
 	end
@@ -177,22 +177,31 @@ class Ball
 
 	private
 
-	# Helper that updates speed according to limits (defined in funciton)
+	# Helpers that update speed according to limits (defined in funciton)
 	def determine_speed(speed, change)
 		if speed + change < 0
-			if speed + change > -3
-				return speed += change
-			else
-				return speed = -2
-			end
+			return getNegativeSpeed(speed, change)
 		else
-			if speed + change < 3
-				return speed += change
-			else
-				return speed = 2
-			end
+			return getPositiveSpeed(speed, change)
 		end
 	end
+
+	def getNegativeSpeed(speed, change)
+		if speed + change > -3
+			return speed += change
+		else
+			return speed = -2
+		end
+	end
+
+	def getPositiveSpeed(speed, change)
+		if speed + change < 3
+			return speed += change
+		else
+			return speed = 2
+		end
+	end
+
 
 end
 
@@ -203,6 +212,7 @@ $ball = Ball.new
 $p1   = Player.new("Player 1",  20, 'white')
 $p2   = Player.new("Player 2", 750, 'blue')
 $gui  = GUI.new
+
 # Game-State
 $running = false
 
@@ -210,13 +220,13 @@ $running = false
 # Check for collosions of the ball with a wall or a player
 def check_collision_x
 	if    $ball.left <= 0
-		score($p2)								# Player 2 scores
+		score($p2)					# Player 2 scores
 	elsif $ball.left <= $p1.right && $ball.bottom > $p1.top && $ball.top < $p1.bottom
 		change_direction_at($p1)	# Collision with Player 1
 	elsif $ball.right >= $p2.left && $ball.bottom > $p2.top && $ball.top < $p2.bottom
 		change_direction_at($p2)	# Collision with Player 2
 	elsif $ball.right >= 800
-		score($p1)								# Player 2 scores
+		score($p1)					# Player 1 scores
 	end
 
 end
