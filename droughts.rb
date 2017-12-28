@@ -25,9 +25,8 @@ set height:     512
 =end
 
 class Node
-  attr_reader :neighbors
-  attr_reader :coordinates
-  attr_reader :isBlack
+    attr_reader :neighbors
+    attr_reader :coordinates
 
   def initialize(x_coordinate, y_coordinate)
     @neighbors   = Hash.new
@@ -35,11 +34,16 @@ class Node
         :x => x_coordinate, 
         :y => y_coordinate,
     }
-    @isBlack     = (@coordinates[:x]+@coordinates[:y])%2 != 0
     @body        = addSquare()
 
     addNeighbors()
   end
+
+  def isBlack?
+    return (@coordinates[:x]+@coordinates[:y])%2 != 0
+  end
+
+
 
   def addNeighbors()
 
@@ -50,9 +54,23 @@ class Node
 
   end
 
-  def placeToken(token)
-    @token  = token if @isBlack
-  end
+    def placeToken(token)
+        @token  = token if isBlack?
+    end
+
+    def highlight()
+        @body.color = 'blue' if isBlack?
+    end
+
+
+
+    def resetColor()
+        @body.color = getSquareColor()
+    end
+
+    def isHighlighted?()
+        return @body.color === 'blue'
+    end
 
   private
 
@@ -87,7 +105,7 @@ class Node
   end
 
   def getSquareColor()
-    return 'black' if @isBlack
+    return 'black' if isBlack?
     return 'white'
   end
 
@@ -128,7 +146,7 @@ end
 class King < Token
 end
 
-def setupMap()
+def initMap()
     $map = Array.new
     fillMap()
     #connectNodes()
@@ -169,7 +187,7 @@ def placeToken_for(position)
     12.times do
         8.times do |x|
             row.upto(row + 2) do |y|
-                $map[x][y].placeToken(Token.new(x, y, player, color)) if $map[x][y].isBlack
+                $map[x][y].placeToken(Token.new(x, y, player, color)) if $map[x][y].isBlack?
             end
         end
     end
@@ -182,7 +200,31 @@ on :key_down do |e|
   end
 end
 
+on :mouse_move do |e|
+    $mouse.highlightNode(e.x, e.y)
+end
+
+class Mouse
+    def highlightNode(x, y)
+        x_coordinate = (x / 64).floor
+        y_coordinate = (y / 64).floor
+        if(!$map[x_coordinate][y_coordinate].isHighlighted? && $map[x_coordinate][y_coordinate] != $highlighted)
+            $highlighted.resetColor() if $highlighted != nil
+            $highlighted = $map[x_coordinate][y_coordinate]
+            $highlighted.highlight()
+        end
+    end
+
+    def highlightMove(x_origin, y_origin)
+    end
+end
+
+def initMouse()
+    $mouse = Mouse.new()
+end
+
 # Start Game
-setupMap()
+initMap()
+initMouse()
 
 show
